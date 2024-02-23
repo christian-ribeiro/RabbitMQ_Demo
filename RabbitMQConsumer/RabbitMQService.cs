@@ -8,7 +8,7 @@ public class RabbitMQService
 {
     private IConnection connection;
     private IModel channel;
-    private List<string> consumerTags = new List<string>();
+    private List<string> consumerTags = [];
 
     public RabbitMQService(string hostname)
     {
@@ -41,7 +41,7 @@ public class RabbitMQService
     {
         if (consumerTags.Count > 0)
         {
-            var consumerTag = consumerTags[0]; // Example: cancel the first consumer
+            var consumerTag = consumerTags[0];
             channel.BasicCancel(consumerTag);
             consumerTags.RemoveAt(0);
             Console.WriteLine($"Consumer {consumerTag} cancelled");
