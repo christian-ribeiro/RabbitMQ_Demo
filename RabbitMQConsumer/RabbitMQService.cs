@@ -8,6 +8,7 @@ public class RabbitMQService
 {
     private IConnection connection;
     private IModel channel;
+    private List<string> consumerTags = new List<string>();
 
     public RabbitMQService(string hostname)
     {
@@ -21,20 +22,29 @@ public class RabbitMQService
         channel.QueueDeclare(queue: queueName, durable: durable, exclusive: exclusive, autoDelete: autoDelete, arguments: null);
     }
 
-    public void CreateConsumers(string queueName, int numberOfConsumers, Action<string> processMessageAction)
+    public void CreateConsumers(string queueName, Action<string> processMessageAction)
     {
-        for (int i = 0; i < numberOfConsumers; i++)
+        var consumer = new EventingBasicConsumer(channel);
+        consumer.Received += (model, ea) =>
         {
-            var consumer = new EventingBasicConsumer(channel);
-            consumer.Received += (model, ea) =>
-            {
-                var body = ea.Body.ToArray();
-                var message = Encoding.UTF8.GetString(body);
-                processMessageAction(message);
-            };
+            var body = ea.Body.ToArray();
+            var message = Encoding.UTF8.GetString(body);
+            processMessageAction(message + " => Tag " + ea.ConsumerTag);
+        };
 
-            channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
-            Console.WriteLine($"Consumer {i + 1} started");
+        string consumerTag = channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
+        consumerTags.Add(consumerTag);
+        Console.WriteLine($"Consumer started -> " + consumerTag);
+    }
+
+    public void CancelConsumer()
+    {
+        if (consumerTags.Count > 0)
+        {
+            var consumerTag = consumerTags[0]; // Example: cancel the first consumer
+            channel.BasicCancel(consumerTag);
+            consumerTags.RemoveAt(0);
+            Console.WriteLine($"Consumer {consumerTag} cancelled");
         }
     }
 }

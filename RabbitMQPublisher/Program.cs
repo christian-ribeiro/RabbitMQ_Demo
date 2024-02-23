@@ -10,10 +10,10 @@ using (var channel = connection.CreateModel())
                          exclusive: false,
                          autoDelete: false,
                          arguments: null);
-
-    for (int i = 0; i < 1000000; i++)
+    int count = 0;
+    do
     {
-        string message = $"Hello World! Message {i}";
+        string message = $"Hello World! Message {count++}";
         var body = Encoding.UTF8.GetBytes(message);
 
         channel.BasicPublish(exchange: "",
@@ -21,8 +21,5 @@ using (var channel = connection.CreateModel())
                              basicProperties: null,
                              body: body);
         Console.WriteLine($" [x] Sent {message}");
-    }
+    } while (true);
 }
-
-Console.WriteLine(" Press [enter] to exit.");
-Console.ReadLine();
