@@ -6,6 +6,7 @@ Console.WriteLine("queue_demo, World!");
 Func<string[], Task> ProcessMessage = async (message) =>
 {
     Console.WriteLine($"Consumidor {message[0]} processou: {message[1]}");
+    await Task.Delay(1000);
 };
 
 List<(RabbitMQService, string consumerTag)> listConsumer = [];
