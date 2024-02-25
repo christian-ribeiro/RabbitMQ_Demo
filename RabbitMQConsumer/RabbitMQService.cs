@@ -6,9 +6,8 @@ namespace RabbitMQConsumer;
 
 public class RabbitMQService
 {
-    private IConnection connection;
-    private IModel channel;
-    private List<string> consumerTags = [];
+    private readonly IConnection connection;
+    private readonly IModel channel;
 
     public RabbitMQService(string hostname)
     {
@@ -23,7 +22,7 @@ public class RabbitMQService
         channel.QueueDeclare(queue: queueName, durable: durable, exclusive: exclusive, autoDelete: autoDelete, arguments: null);
     }
 
-    public void CreateConsumers(Func<string[], Task> processMessageAction)
+    public string CreateConsumer(Func<string[], Task> processMessageAction)
     {
         var consumer = new AsyncEventingBasicConsumer(channel);
         consumer.Received += async (model, ea) =>
@@ -34,17 +33,16 @@ public class RabbitMQService
         };
 
         string consumerTag = channel.BasicConsume(queue: channel.CurrentQueue, autoAck: true, consumer: consumer);
-        consumerTags.Add(consumerTag);
+        return consumerTag;
     }
 
-    public void CancelConsumer()
+    public static void CancelConsumer(List<(RabbitMQService Service, string ConsumerTag)> listConsumer)
     {
-        if (consumerTags.Count > 0)
+        if (listConsumer.Count > 0)
         {
-            var consumerTag = consumerTags[0];
-            channel.BasicCancel(consumerTag);
-            consumerTags.RemoveAt(0);
-            Console.WriteLine($"Consumer {consumerTag} cancelled");
+            var (Service, ConsumerTag) = listConsumer[0];
+            Service.channel.BasicCancel(ConsumerTag);
+            Console.WriteLine($"Consumer {ConsumerTag} cancelled");
         }
     }
 }
