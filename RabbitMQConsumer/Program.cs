@@ -4,13 +4,13 @@ using RabbitMQConsumer;
 //Simulação de método para teste de execução assíncrona com carga
 //ConsumerTag apenas para identificar de qual consumidor veio a mensagem
 //Channel e DeliveryTag apenas para confirmar o processamento da mensagem
-Func<(string ConsumerTag, string Message, IModel Channel, ulong DeliveryTag), Task> ProcessMessage = async (i) =>
+Func<string, string, IModel, ulong, Task> ProcessMessage = async (string consumerTag, string message, IModel channel, ulong deliveryTag) =>
 {
-    Console.WriteLine($"Consumidor {i.ConsumerTag} processou: {i.Message}");
+    Console.WriteLine($"Consumidor {consumerTag} processou: {message}");
     await Task.Delay(1000);
 
     //Confirma o processamento da mensagem (Só utilizar se o autoAck for false)
-    i.Channel.BasicAck(deliveryTag: i.DeliveryTag, multiple: false);
+    channel.BasicAck(deliveryTag: deliveryTag, multiple: false);
 };
 
 //Lista de consumidores ativos

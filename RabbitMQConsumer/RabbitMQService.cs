@@ -23,7 +23,7 @@ public class RabbitMQService
     }
 
     //processMessageAction => Função de teste executada após o consumidor ler a mensagem
-    public string CreateConsumer(Func<(string ConsumerTag, string Message, IModel Channel, ulong DeliveryTag), Task> processMessageAction)
+    public string CreateConsumer(Func<string, string, IModel, ulong, Task> processMessageAction)
     {
         var consumer = new AsyncEventingBasicConsumer(channel);
         consumer.Received += async (model, ea) =>
@@ -32,7 +32,7 @@ public class RabbitMQService
             var message = Encoding.UTF8.GetString(body);
 
             //Chamada passando o Channel / DeliveryTag para utilizar com o autoAck = false
-            await processMessageAction((ea.ConsumerTag, message, channel, ea.DeliveryTag));
+            await processMessageAction(ea.ConsumerTag, message, channel, ea.DeliveryTag);
         };
 
         //autoAck: false -> Desativa a confirmação automática de mensagens, que vai ser feito dentro do método ProcessMessage, com o Channel.BasicAck
