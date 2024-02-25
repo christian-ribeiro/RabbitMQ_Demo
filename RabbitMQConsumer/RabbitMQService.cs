@@ -11,8 +11,7 @@ public class RabbitMQService
 
     public RabbitMQService(string hostname)
     {
-        var factory = new ConnectionFactory() { HostName = hostname };
-        factory.DispatchConsumersAsync = true;
+        var factory = new ConnectionFactory { HostName = hostname, DispatchConsumersAsync = true };
         connection = factory.CreateConnection();
         channel = connection.CreateModel();
     }
