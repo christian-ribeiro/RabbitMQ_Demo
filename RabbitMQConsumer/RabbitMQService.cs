@@ -22,6 +22,7 @@ public class RabbitMQService
         channel.QueueDeclare(queue: queueName, durable: durable, exclusive: exclusive, autoDelete: autoDelete, arguments: null);
     }
 
+    //processMessageAction => Função de teste executada após o consumidor ler a mensagem
     public string CreateConsumer(Func<(string ConsumerTag, string Message, IModel Channel, ulong DeliveryTag), Task> processMessageAction)
     {
         var consumer = new AsyncEventingBasicConsumer(channel);
