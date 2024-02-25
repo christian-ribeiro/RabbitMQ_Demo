@@ -13,6 +13,7 @@ public class RabbitMQService
     public RabbitMQService(string hostname)
     {
         var factory = new ConnectionFactory() { HostName = hostname };
+        factory.DispatchConsumersAsync = true;
         connection = factory.CreateConnection();
         channel = connection.CreateModel();
     }
@@ -22,19 +23,18 @@ public class RabbitMQService
         channel.QueueDeclare(queue: queueName, durable: durable, exclusive: exclusive, autoDelete: autoDelete, arguments: null);
     }
 
-    public void CreateConsumers(string queueName, Action<string> processMessageAction)
+    public void CreateConsumers(Func<string[], Task> processMessageAction)
     {
-        var consumer = new EventingBasicConsumer(channel);
-        consumer.Received += (model, ea) =>
+        var consumer = new AsyncEventingBasicConsumer(channel);
+        consumer.Received += async (model, ea) =>
         {
             var body = ea.Body.ToArray();
             var message = Encoding.UTF8.GetString(body);
-            processMessageAction(message + " => Tag " + ea.ConsumerTag);
+            await processMessageAction([ea.ConsumerTag, message]);
         };
 
-        string consumerTag = channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
+        string consumerTag = channel.BasicConsume(queue: channel.CurrentQueue, autoAck: true, consumer: consumer);
         consumerTags.Add(consumerTag);
-        Console.WriteLine($"Consumer started -> " + consumerTag);
     }
 
     public void CancelConsumer()
