@@ -24,7 +24,7 @@ do
     {
         //Declarando novo channel / consumer para que o async funcione corretamente, com 1 consumidor por canal
         var service = new RabbitMQService("localhost");
-        service.DeclareQueue("queue_demo", durable: false, exclusive: false, autoDelete: false);
+        service.DeclareQueue("queue_demo");
 
         var consumer = service.CreateConsumer(ProcessMessage);
 
