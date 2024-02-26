@@ -14,7 +14,7 @@ Func<string, string, IModel, ulong, Task> ProcessMessage = async (string consume
 };
 
 //Lista de consumidores ativos
-List<(RabbitMQService, string consumerTag)> listConsumer = [];
+List<(IModel Channel, string ConsumerTag)> listConsumer = [];
 
 do
 {
@@ -26,10 +26,10 @@ do
         var service = new RabbitMQService("localhost");
         service.DeclareQueue("queue_demo", durable: false, exclusive: false, autoDelete: false);
 
-        var consumerTag = service.CreateConsumer(ProcessMessage);
+        var consumer = service.CreateConsumer(ProcessMessage);
 
         //Adicionando o Service e o ConsumerTag para que o consumidor possa ser cancelado posteriormente, se necessário
-        listConsumer.Add((service, consumerTag));
+        listConsumer.Add(consumer);
     }
     else if (listConsumer.Count > environmentConsumers)
     {

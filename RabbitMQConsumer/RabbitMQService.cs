@@ -23,7 +23,7 @@ public class RabbitMQService
     }
 
     //processMessageAction => Função de teste executada após o consumidor ler a mensagem
-    public string CreateConsumer(Func<string, string, IModel, ulong, Task> processMessageAction)
+    public (IModel Channel, string ConsumerTag) CreateConsumer(Func<string, string, IModel, ulong, Task> processMessageAction)
     {
         var consumer = new AsyncEventingBasicConsumer(channel);
         consumer.Received += async (model, ea) =>
@@ -36,16 +36,17 @@ public class RabbitMQService
         };
 
         //autoAck: false -> Desativa a confirmação automática de mensagens, que vai ser feito dentro do método ProcessMessage, com o Channel.BasicAck
-        return channel.BasicConsume(queue: channel.CurrentQueue, autoAck: false, consumer: consumer);
+        var consumerTag = channel.BasicConsume(queue: channel.CurrentQueue, autoAck: false, consumer: consumer);
+        return (channel, consumerTag);
     }
 
     //Remove o primeiro consumidor da lista
-    public static void CancelConsumer(List<(RabbitMQService Service, string ConsumerTag)> listConsumer)
+    public static void CancelConsumer(List<(IModel Channel, string ConsumerTag)> listConsumer)
     {
         if (listConsumer.Count > 0)
         {
-            var (Service, ConsumerTag) = listConsumer[0];
-            Service.channel.BasicCancel(ConsumerTag);
+            var (Channel, ConsumerTag) = listConsumer[0];
+            Channel.BasicCancel(ConsumerTag);
             Console.WriteLine($"Consumer {ConsumerTag} cancelled");
         }
     }
