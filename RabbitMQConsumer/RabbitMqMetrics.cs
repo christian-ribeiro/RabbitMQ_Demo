@@ -5,14 +5,14 @@ using System.Text.Json.Serialization;
 
 namespace RabbitMQConsumer;
 
-public class RabbitMqMetrics
+public class RabbitMQMetrics
 {
     private readonly Uri _baseUri = new Uri("http://localhost:15672/api/");
     private readonly string _username = "guest";
     private readonly string _password = "guest";
     private readonly HttpClient _httpClient;
 
-    public RabbitMqMetrics()
+    public RabbitMQMetrics()
     {
         _httpClient = new HttpClient();
         _httpClient.BaseAddress = _baseUri;
@@ -53,14 +53,5 @@ public class RabbitMqMetrics
         return (0, 0);
     }
 
-    public class Metrics
-    {
-        [JsonPropertyName("consumer_capacity")]
-        public double ConsumerCapacity { get; set; }
-        [JsonPropertyName("consumer_utilisation")]
-        public double ConsumerUtilisation { get; set; }
-        [JsonPropertyName("consumers")]
-        public int Consumers { get; set; }
-    }
-
+    public record Metrics([property: JsonPropertyName("consumer_capacity")] double ConsumerCapacity, [property: JsonPropertyName("consumer_utilisation")] double ConsumerUtilisation, [property: JsonPropertyName("consumers")] int Consumers);
 }

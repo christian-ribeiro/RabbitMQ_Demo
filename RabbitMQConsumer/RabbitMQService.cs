@@ -20,7 +20,7 @@ public class RabbitMQService
     public void DeclareQueue(string queueName)
     {
         //QueueDeclarePassive => Verifica se a fila existe sem modificar ela. Se não existir, o Rabbit retornará um erro
-        channel.QueueDeclarePassive(queueName);
+        channel.QueueDeclare(queue: queueName, durable: false, exclusive: false, autoDelete: false, arguments: null);
     }
 
     //processMessageAction => Função de teste executada após o consumidor ler a mensagem
